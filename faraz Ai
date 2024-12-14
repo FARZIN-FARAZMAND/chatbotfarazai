@@ -1,0 +1,38 @@
+import g4f
+import streamlit as st
+st.title('faraz Ai')
+stored_info = {}
+info_key = st.text_input('عنوان اطلاعات (مثلاً: نام، سن)')
+info_value = st.text_area('مقدار اطلاعاتی که می‌خواهید ذخیره کنید')
+save_info = st.button('ذخیره اطلاعات')
+if save_info:
+    if info_key.strip() and info_value.strip():
+        stored_info[info_key] = info_value
+        st.success(f"اطلاعات با عنوان '{info_key}' ذخیره شد.")
+    else:
+        st.warning("لطفاً هر دو فیلد را پر کنید.")
+
+inp = st.text_area('هر سوالی دارید بپرسید')
+ok = st.button('بزن بریم')
+if ok:
+    if inp.strip() == "":
+        st.warning("لطفاً سوال خود را وارد کنید.")
+    else:
+        with st.spinner('در حال پردازش...'):
+            try:
+                
+                info_messages = [{"role": "system", "content": f"{key}: {value}"} for key, value in stored_info.items()]
+                messages = info_messages + [{"role": "user", "content": inp}]
+
+                response = g4f.ChatCompletion.create(
+                    model='gpt-3.5-turbo',
+                    messages=messages,
+                    stream=True
+                )
+
+                for message in response:
+                    m = "".join(message)
+                    st.markdown(m)  
+
+            except Exception as e:
+                st.error(f"خطا در پردازش درخواست: {e}")
